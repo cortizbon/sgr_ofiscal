@@ -101,8 +101,7 @@ with tab1:
 
     fig.update_layout(yaxis_range=(0, 1))
     st.plotly_chart(fig)
-    
-    st.plotly_chart(fig)
+
 
 # gráfico de área de la composición de hidrocarburos
 # gráfico como porcentaje del PIB
