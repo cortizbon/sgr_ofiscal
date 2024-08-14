@@ -159,7 +159,9 @@ with tab2:
 # Subdivisón de ahorro
     st.header("Ahorro")
 
-    ahorro = sgr_fia[sgr_fia['CONCEPTO 1'] == 'AHORRO']
+    ahorro = sgr_fia[sgr_fia['CONCEPTO 1'] == 'AHORRO'].pivot_table(index=['Periodo', 'CONCEPTO 2'],
+                                                                    values='Instrucción de abono a cuenta',
+                                                                    aggfunc='sum').reset_index()
     st.dataframe(ahorro)
     fig = px.bar(ahorro, x='Periodo', y='Instrucción de abono a cuenta', color='CONCEPTO 2')
     st.plotly_chart(fig)
@@ -170,7 +172,9 @@ with tab2:
 
     st.header("Inversión")
 
-    inv = sgr_fia[sgr_fia['CONCEPTO 1'] == 'INVERSIÓN']
+    inv = sgr_fia[sgr_fia['CONCEPTO 1'] == 'INVERSIÓN'].pivot_table(index=['Periodo', 'CONCEPTO 2'],
+                                                                    values='Instrucción de abono a cuenta',
+                                                                    aggfunc='sum').reset_index()
     st.dataframe(inv)
     fig = px.bar(inv, x='Periodo', y='Instrucción de abono a cuenta', color='CONCEPTO 2')
     st.plotly_chart(fig)    
