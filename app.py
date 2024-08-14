@@ -117,10 +117,9 @@ with tab1:
     sgr_miner_per = sgr_miner[sgr_miner['Periodo'] == per]
     fig = px.treemap(sgr_miner_per,
                      path=[px.Constant("Total regalías mineras"),
-                           "Departamento",
-                           "Municipio",
-                           "clasificacion",
-                           "Recurso Natural"],
+                           "Clasificación",
+                           "Departamento"
+                           "Municipio"],
                     values='Regalías causadas')
     st.plotly_chart(fig)
 
