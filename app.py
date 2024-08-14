@@ -117,7 +117,7 @@ with tab1:
     sgr_miner_per = sgr_miner[sgr_miner['Periodo'] == per]
     fig = px.treemap(sgr_miner_per,
                      path=[px.Constant("Total regalías mineras"),
-                           "Clasificación",
+                           "clasificacion",
                            "Departamento"
                            "Municipio"],
                     values='Regalías causadas')
