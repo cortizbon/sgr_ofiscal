@@ -14,7 +14,7 @@ st.set_page_config(layout='wide')
 
 sgr_fia = pd.read_csv('datasets/sgr_fia.csv')
 sgr_func = pd.read_csv('datasets/sgr_func.csv')
-sgr_miner = pd.read_csv('datasets/sgr_miner_2.csv')
+sgr_miner = pd.read_csv('datasets/sgr_miner_3.csv')
 sgr_hidroc = pd.read_csv('datasets/sgr_hidroc.csv')
 sgr_regal_comp = pd.read_csv('datasets/sgr_regal_tot.csv')
 sgr_proy = pd.read_csv('datasets/base_proyectos_simp.csv')
@@ -72,17 +72,17 @@ with tab1:
     st.header("Composición de los hidrocarburos")
 
     st.dataframe(sgr_hidroc)
-    x=sgr_hidroc['Periodo'].unique().tolist()
+    x = sgr_hidroc['Periodo'].unique().tolist()
 
     t = (sgr_hidroc
-    .groupby('Periodo')[['RECAUDO POR GAS\n$COP', 
-                        'RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) $COP']]
+    .groupby('Periodo')[['RECAUDO POR GAS\n$COP 2024', 
+                        'RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) 2024']]
     .sum()
-    .assign(total= lambda x: x[['RECAUDO POR GAS\n$COP', 
-                        'RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) $COP']].sum(axis=1)))
+    .assign(total= lambda x: x[['RECAUDO POR GAS\n$COP 2024', 
+                        'RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) 2024']].sum(axis=1)))
 
-    t = t[['RECAUDO POR GAS\n$COP','RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) $COP']].div(t['total'], axis=0).rename(columns={'RECAUDO POR GAS\n$COP': "Gas %",
-                                                                                                                         'RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) $COP': "Petróleo %"})
+    t = t[['RECAUDO POR GAS\n$COP 2024','RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) 2024']].div(t['total'], axis=0).rename(columns={'RECAUDO POR GAS\n$COP 2024': "Gas %",
+                                                                                                                         'RECAUDO POR CRUDO (ESPECIE Y MONETIZADO) 2024': "Petróleo %"})
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=x, y=t['Gas %'],
@@ -117,11 +117,22 @@ with tab1:
 
     per = st.select_slider("Seleccione un periodo", sgr_miner['Periodo'].unique().tolist())
 
-    sgr_miner_per = sgr_miner[sgr_miner['Periodo'] == per]
+    sgr_miner_per = sgr_miner[sgr_miner['Periodo'] == per].groupby('clasificacion')['Regalías causadas 2024'].sum().reset_index()
     fig = px.treemap(sgr_miner_per,
                      path=[px.Constant("Total recaudo minero"),
                            "clasificacion"],
-                    values='Regalías causadas')
+                    values='Regalías causadas 2024')
+    st.plotly_chart(fig)
+
+    prov_piv = sgr_miner.pivot_table(index='clasificacion',
+                          columns='Periodo',
+                          values='Regalías causadas 2024',
+                          aggfunc='sum')
+    
+   
+    sol = prov_piv.div(prov_piv.sum(axis=0), axis=1).unstack().reset_index().rename(columns={0:'%'})
+    fig = px.area(sol, x='Periodo', y='%', color='clasificacion')
+
     st.plotly_chart(fig)
 
 # gráfico de área de la composición de minerales
