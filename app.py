@@ -19,6 +19,7 @@ sgr_hidroc = pd.read_csv('datasets/sgr_hidroc_opt.csv')
 sgr_regal_comp = pd.read_csv('datasets/comp_rec.csv')
 sgr_proy = pd.read_csv('datasets/proyectos.csv')
 sgr_cont = pd.read_csv('datasets/contratos.csv')
+asig_reg = pd.read_csv('datasets/sgr_asig_reg.csv')
 
 # titulo
 
