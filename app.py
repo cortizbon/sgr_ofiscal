@@ -24,7 +24,7 @@ sgr_cont = pd.read_csv('datasets/contratos.csv')
 
 st.title("Sistema General de Regalías")
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs(['Recaudo', 'Asignación', 'Proyectos', 'Contratos', 'Proyectos sectorizados'])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(['Recaudo', 'Asignación', 'Proyectos', 'Contratos', 'Proyectos sectorizados', 'Scatters'])
 
 # varios tabs
 
@@ -658,3 +658,39 @@ with tab5:
     fig = px.imshow(piv_dm_per, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
+
+with tab6:
+
+    # numero de proyectos vs. valor medio departamento
+    piv_1 = (sgr_proy
+             .groupby(['Periodo', 'SECTOR SUIFP'])
+             .agg({'total_proyecto_pc':['count','mean']})
+             .reset_index())
+    piv_1.columns = ['Periodo', 'SECTOR', 'num_proyectos', 'valor_promedio_proy']
+    st.dataframe(piv_1)
+    fig = px.scatter(piv_1,
+                     x='num_proyectos',
+                     y='valor_promedio_proy', hover_data=['Periodo', 'SECTOR', 'num_proyectos', 'valor_promedio_proy'])
+    fig.update_layout(showlegend=False)
+    st.plotly_chart(fig)
+    piv_2 = (sgr_proy
+             .groupby(['Periodo', 'DEPARTAMENTO EJECUTOR'])
+             .agg({'total_proyecto_pc':['count','mean']})
+             .reset_index())
+    piv_2.columns = ['Periodo', 'Departamento', 'num_proyectos', 'valor_promedio_proy']
+    st.dataframe(piv_2)
+    fig = px.scatter(piv_2,
+                     x='num_proyectos',
+                     y='valor_promedio_proy',
+                     hover_data=['Periodo', 'Departamento', 'num_proyectos', 'valor_promedio_proy'])
+    fig.update_layout(showlegend=False)
+    st.plotly_chart(fig)
+
+    
+    
+    
+
+
+
+    # numero de proyectos vs. valor medio sector
+
