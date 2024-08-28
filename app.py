@@ -25,7 +25,13 @@ asig_reg = pd.read_csv('datasets/sgr_asig_reg.csv')
 
 st.title("Sistema General de Regalías")
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(['Recaudo', 'Asignación', 'Proyectos', 'Contratos', 'Proyectos sectorizados', 'Scatters'])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Recaudo', 
+                                                    'Asignación', 
+                                                    'Proyectos', 
+                                                    'Contratos', 
+                                                    'Proyectos sectorizados', 
+                                                    'Scatters',
+                                                    'Asignación regional'])
 
 # varios tabs
 
@@ -579,15 +585,20 @@ with tab4:
     st.plotly_chart(fig)
 
     depto = st.selectbox("Seleccione un departamento: ", sgr_cont['DEPARTAMENTO EJECUTOR'].unique().tolist())
+
     fil_depto = sgr_cont[sgr_cont['DEPARTAMENTO EJECUTOR'] == depto]
     piv_depto = fil_depto.groupby('NOMBRE CONTRATISTA')['total_contrato_pc'].sum().sort_values(ascending=False).reset_index().head(10)
 
     fig = px.bar(piv_depto, x='NOMBRE CONTRATISTA',y='total_contrato_pc')
     st.plotly_chart(fig)
 
+    
+
     piv_depto = fil_depto.groupby('NOMBRE CONTRATISTA')['total_contrato_pc'].count().sort_values(ascending=False).reset_index().head(10)
 
     fig = px.bar(piv_depto, x='NOMBRE CONTRATISTA',y='total_contrato_pc')
+
+    
     st.plotly_chart(fig)
 
 with tab5:
@@ -688,10 +699,7 @@ with tab6:
     st.plotly_chart(fig)
 
     
-    
-    
+with tab7:
+    st.dataframe(asig_reg)
 
-
-
-    # numero de proyectos vs. valor medio sector
 
