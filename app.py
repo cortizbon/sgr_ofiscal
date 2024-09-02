@@ -45,7 +45,7 @@ with tab1:
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=x, y=sgr_regal_comp['% miner'],
+        x=x, y=sgr_regal_comp['Minería %'],
         hoverinfo='x+y',
         mode='lines',
         line=dict(width=0.5, color='rgb(131, 90, 241)'),
@@ -53,7 +53,7 @@ with tab1:
         name = "Minería %" # define stack group
     ))
     fig.add_trace(go.Scatter(
-        x=x, y=sgr_regal_comp['% hidroc'],
+        x=x, y=sgr_regal_comp['Hidrocarburos %'],
         hoverinfo='x+y',
         mode='lines',
         line=dict(width=0.5, color='rgb(111, 231, 219)'),
@@ -82,14 +82,18 @@ with tab1:
     x = sgr_hidroc['Periodo'].unique().tolist()
 
     t = (sgr_hidroc
-    .groupby('Periodo')[['recaudo_gas_pc', 
-                        'recaud_crudo_em_pc']]
-    .sum()
-    .assign(total= lambda x: x[['recaudo_gas_pc', 
-                        'recaud_crudo_em_pc']].sum(axis=1)))
+            .groupby('Periodo')[['recaudo_gas_pc', 
+                                'recaud_crudo_em_pc']]
+            .sum()
+            .assign(total= lambda x: x[['recaudo_gas_pc', 
+                                'recaud_crudo_em_pc']].sum(axis=1)))
 
-    t = t[['recaudo_gas_pc','recaud_crudo_em_pc']].div(t['total'], axis=0).rename(columns={'recaudo_gas_pc': "Gas %",
-                                                                                                                         'recaud_crudo_em_pc': "Petróleo %"})
+
+    t = (t[['recaudo_gas_pc','recaud_crudo_em_pc']]
+            .div(t['total'], axis=0)
+            .rename(columns={'recaudo_gas_pc': "Gas %",
+                            'recaud_crudo_em_pc': "Petróleo %"}))
+
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=x, y=t['Gas %'],
@@ -162,15 +166,15 @@ with tab2:
 
     fig = px.treemap(sgr_func_per, 
                      path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
-                     values="Apropiación vigente disponible",
-                     title="Apropiación vigente disponible")
+                     values="aprop_vig_pc",
+                     title="aprop_vig_pc")
 
     st.plotly_chart(fig)
     
     fig = px.treemap(sgr_func_per, 
                      path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
-                     values="Caja total",
-                     title='Caja total')
+                     values="caja_total_pc",
+                     title='caja_total_pc')
 
     st.plotly_chart(fig)
 
@@ -179,10 +183,10 @@ with tab2:
     st.header("Ahorro")
 
     ahorro = sgr_fia[sgr_fia['CONCEPTO 1'] == 'AHORRO'].pivot_table(index=['Periodo', 'CONCEPTO 2'],
-                                                                    values='Instrucción de abono a cuenta',
+                                                                    values='instruccion_abono_pc',
                                                                     aggfunc='sum').reset_index()
     st.dataframe(ahorro)
-    fig = px.bar(ahorro, x='Periodo', y='Instrucción de abono a cuenta', color='CONCEPTO 2')
+    fig = px.bar(ahorro, x='Periodo', y='instruccion_abono_pc', color='CONCEPTO 2')
     st.plotly_chart(fig)
 
 
@@ -192,10 +196,10 @@ with tab2:
     st.header("Inversión")
 
     inv = sgr_fia[sgr_fia['CONCEPTO 1'] == 'INVERSIÓN'].pivot_table(index=['Periodo', 'CONCEPTO 2'],
-                                                                    values='Instrucción de abono a cuenta',
+                                                                    values='instruccion_abono_pc',
                                                                     aggfunc='sum').reset_index()
     st.dataframe(inv)
-    fig = px.bar(inv, x='Periodo', y='Instrucción de abono a cuenta', color='CONCEPTO 2')
+    fig = px.bar(inv, x='Periodo', y='instruccion_abono_pc', color='CONCEPTO 2')
     st.plotly_chart(fig)    
 
 with tab3:
@@ -600,6 +604,27 @@ with tab4:
 
     
     st.plotly_chart(fig)
+
+    st.header("Tipo de contrato")
+    
+    fig, ax = plt.subplots(1, 1)
+    (sgr_cont['TIPO CONTRATO']
+     .value_counts()
+     .sort_values()
+     .plot(kind='barh', ax=ax))
+    
+    st.pyplot(fig)
+
+
+    st.header("Tipo de contratista")
+    fig, ax = plt.subplots(1, 1)
+    (sgr_cont['TIPO CONTRATISTA']
+     .value_counts()
+     .sort_values()
+     .plot(kind='barh', ax=ax))
+    
+    st.pyplot(fig)
+
 
 with tab5:
     st.header("Por año y por sector")
