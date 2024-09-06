@@ -380,12 +380,12 @@ with tab3:
 
     tab = pd.concat([a, b, c], axis=1)
     tab.columns = ['A TIEMPO', 'APLAZADO', 'ADELANTADO']
+    st.dataframe(tab)
     tab = tab.div(tab.sum(axis=1), axis=0)
     tab = tab.unstack().reset_index(name='num_proyectos')
     tab.columns = ['cat', 'año', 'num_proyectos']
 
     fig = px.area(tab, x='año', y='num_proyectos', color='cat')
-    st.dataframe(tab)
 
     st.plotly_chart(fig)
 
@@ -411,12 +411,13 @@ with tab3:
 
     tab = pd.concat([a, b, c], axis=1)
     tab.columns = ['A TIEMPO', 'APLAZADO', 'ADELANTADO']
+    st.dataframe(tab)
     tab = tab.div(tab.sum(axis=1), axis=0)
     tab = tab.unstack().reset_index(name='num_proyectos')
     tab.columns = ['cat', 'año', 'num_proyectos']
 
     fig = px.area(tab, x='año', y='num_proyectos', color='cat')
-    st.dataframe(tab)
+    
 
     st.plotly_chart(fig)
 
