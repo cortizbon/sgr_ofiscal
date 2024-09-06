@@ -162,7 +162,7 @@ with tab2:
     st.header("Funcionamiento")
     per = st.select_slider("Seleccione un periodo: ", sgr_func['Periodo'].unique().tolist())
     sgr_func_per = sgr_func[sgr_func['Periodo'] == per]
-    st.dataframe(sgr_func_per)
+    st.dataframe(sgr_func)
 
     fig = px.treemap(sgr_func_per, 
                      path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
