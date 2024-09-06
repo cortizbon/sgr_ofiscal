@@ -385,6 +385,7 @@ with tab3:
     tab.columns = ['cat', 'año', 'num_proyectos']
 
     fig = px.area(tab, x='año', y='num_proyectos', color='cat')
+    st.dataframe(tab)
 
     st.plotly_chart(fig)
 
@@ -415,6 +416,7 @@ with tab3:
     tab.columns = ['cat', 'año', 'num_proyectos']
 
     fig = px.area(tab, x='año', y='num_proyectos', color='cat')
+    st.dataframe(tab)
 
     st.plotly_chart(fig)
 
@@ -612,7 +614,9 @@ with tab4:
      .value_counts()
      .sort_values()
      .plot(kind='barh', ax=ax))
-    
+    st.dataframe(sgr_cont['TIPO CONTRATO']
+     .value_counts()
+     .sort_values())
     st.pyplot(fig)
 
 
@@ -622,7 +626,9 @@ with tab4:
      .value_counts()
      .sort_values()
      .plot(kind='barh', ax=ax))
-    
+    st.dataframe(sgr_cont['TIPO CONTRATISTA']
+     .value_counts()
+     .sort_values())
     st.pyplot(fig)
 
 
