@@ -367,8 +367,9 @@ with tab3:
            'FECHA INICIO PROGRAMACIÓN ACTUAL', 'FECHA FINAL PROGRAMACIÓN ACTUAL']:
         sgr_proy[col] = pd.to_datetime(sgr_proy[col])
     
+    sgr_proy2 = sgr_proy[sgr_proy['FECHA FINAL PROGRAMACIÓN ACTUAL'] <= pd.to_datetime("2024-06-30")]
 
-    fechas = sgr_proy[['DEPARTAMENTO EJECUTOR','AÑO APROBACIÓN', 'Periodo','FECHA INICIO PROGRAMACIÓN INICIAL', 'FECHA FINAL PROGRAMACIÓN INICIAL',
+    fechas = sgr_proy2[['DEPARTAMENTO EJECUTOR','AÑO APROBACIÓN', 'Periodo','FECHA INICIO PROGRAMACIÓN INICIAL', 'FECHA FINAL PROGRAMACIÓN INICIAL',
            'FECHA INICIO PROGRAMACIÓN ACTUAL', 'FECHA FINAL PROGRAMACIÓN ACTUAL']]
     
     st.subheader("Desfase en fechas de inicio")
@@ -408,14 +409,29 @@ with tab3:
 
     st.subheader("Desfase en fechas de finalización")
 
-    tab = pd.concat([a, b, c], axis=1)
-    tab.columns = ['A TIEMPO', 'APLAZADO', 'ADELANTADO']
+    d = sgr_proy.groupby('AÑO APROBACIÓN').size()
+
+    tab = pd.concat([a, b, c, d], axis=1)
+    
+    tab.columns = ['FIN. A TIEMPO', 'FIN. DESPUÉS DE TIEMPO', 'FIN ANTES DE TIEMPO', 'EN EJECUCIÓN']
+    st.dataframe(tab)
+    tab2 = tab.copy()
     tab = tab.div(tab.sum(axis=1), axis=0)
     tab = tab.unstack().reset_index(name='num_proyectos')
     tab.columns = ['cat', 'año', 'num_proyectos']
 
+
     fig = px.area(tab, x='año', y='num_proyectos', color='cat')
 
+    st.plotly_chart(fig)
+
+    tab2 = tab2.unstack().reset_index(name='num_proyectos')
+    tab2.columns = ['cat', 'año', 'num_proyectos']
+    st.dataframe(tab2)
+
+    tab2.to_excel('datos_william.xlsx', index=False)
+
+    fig = px.bar(tab2, x='año', y='num_proyectos', color='cat')
     st.plotly_chart(fig)
 
 
