@@ -162,7 +162,7 @@ with tab2:
     st.header("Funcionamiento")
     per = st.select_slider("Seleccione un periodo: ", sgr_func['Periodo'].unique().tolist())
     sgr_func_per = sgr_func[sgr_func['Periodo'] == per]
-    st.dataframe(sgr_func_per)
+    st.dataframe(sgr_func)
 
     fig = px.treemap(sgr_func_per, 
                      path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
@@ -381,6 +381,7 @@ with tab3:
 
     tab = pd.concat([a, b, c], axis=1)
     tab.columns = ['A TIEMPO', 'APLAZADO', 'ADELANTADO']
+    st.dataframe(tab)
     tab = tab.div(tab.sum(axis=1), axis=0)
     tab = tab.unstack().reset_index(name='num_proyectos')
     tab.columns = ['cat', 'año', 'num_proyectos']
@@ -416,12 +417,14 @@ with tab3:
     tab.columns = ['FIN. A TIEMPO', 'FIN. DESPUÉS DE TIEMPO', 'FIN ANTES DE TIEMPO', 'EN EJECUCIÓN']
     st.dataframe(tab)
     tab2 = tab.copy()
+
     tab = tab.div(tab.sum(axis=1), axis=0)
     tab = tab.unstack().reset_index(name='num_proyectos')
     tab.columns = ['cat', 'año', 'num_proyectos']
 
 
     fig = px.area(tab, x='año', y='num_proyectos', color='cat')
+    
 
     st.plotly_chart(fig)
 
@@ -628,7 +631,9 @@ with tab4:
      .value_counts()
      .sort_values()
      .plot(kind='barh', ax=ax))
-    
+    st.dataframe(sgr_cont['TIPO CONTRATO']
+     .value_counts()
+     .sort_values())
     st.pyplot(fig)
 
 
@@ -638,7 +643,9 @@ with tab4:
      .value_counts()
      .sort_values()
      .plot(kind='barh', ax=ax))
-    
+    st.dataframe(sgr_cont['TIPO CONTRATISTA']
+     .value_counts()
+     .sort_values())
     st.pyplot(fig)
 
 
