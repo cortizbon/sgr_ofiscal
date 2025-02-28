@@ -12,6 +12,13 @@ st.set_page_config(layout='wide')
 
 # lectura de datos
 
+colors = {'verde':["#009966"],
+               'ro_am_na':["#FFE9C5", "#F7B261","#D8841C", "#dd722a","#C24C31", "#BC3B26"],
+               'az_verd': ["#CBECEF", "#81D3CD", "#0FB7B3", "#009999"],
+               'ax_viol': ["#D9D9ED", "#2F399B", "#1A1F63", "#262947"],
+               'ofiscal': ["#F9F9F9", "#2635bf"]}
+
+
 sgr_fia = pd.read_csv('datasets/sgr_fia.csv')
 sgr_func = pd.read_csv('datasets/sgr_func.csv')
 sgr_miner = pd.read_csv('datasets/sgr_miner_opt.csv')
@@ -20,35 +27,35 @@ sgr_regal_comp = pd.read_csv('datasets/comp_rec.csv')
 sgr_proy = pd.read_csv('datasets/proyectos.csv')
 sgr_cont = pd.read_csv('datasets/contratos.csv')
 asig_reg = pd.read_csv('datasets/sgr_asig_reg.csv')
+    
+
 
 # titulo
 
 st.title("Sistema General de Regalías")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Recaudo', 
+tab1, tab2, tab3, tab4 = st.tabs(['Recaudo', 
                                                     'Asignación', 
                                                     'Proyectos', 
-                                                    'Contratos', 
-                                                    'Proyectos sectorizados', 
-                                                    'Scatters',
-                                                    'Asignación regional'])
+                                                    'Contratos'])
 
 # varios tabs
+custom_palette = [ "#262947","#0FB7B3","#D8841C"]
 
 with tab1:
     st.header("Composición del recaudo")
 
-    st.dataframe(sgr_regal_comp)
+    sgr_regal_comp = sgr_regal_comp[sgr_regal_comp['Periodo'] != '2023-2024']
 
 
-    x=sgr_regal_comp['Periodo']
+    x = sgr_regal_comp['Periodo']
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=x, y=sgr_regal_comp['Minería %'],
         hoverinfo='x+y',
         mode='lines',
-        line=dict(width=0.5, color='rgb(131, 90, 241)'),
+        line=dict(width=0.5, color="#1A1F63"),
         stackgroup='one',
         name = "Minería %" # define stack group
     ))
@@ -56,7 +63,7 @@ with tab1:
         x=x, y=sgr_regal_comp['Hidrocarburos %'],
         hoverinfo='x+y',
         mode='lines',
-        line=dict(width=0.5, color='rgb(111, 231, 219)'),
+        line=dict(width=0.5, color="#0FB7B3"),
         stackgroup='one',
         name = "Hidrocarburos"
     ))
@@ -78,8 +85,8 @@ with tab1:
 # Subdivisión de hidrocarburos
     st.header("Composición de los hidrocarburos")
 
-    st.dataframe(sgr_hidroc)
     x = sgr_hidroc['Periodo'].unique().tolist()
+    x.remove("2023-2024")
 
     t = (sgr_hidroc
             .groupby('Periodo')[['recaudo_gas_pc', 
@@ -99,7 +106,7 @@ with tab1:
         x=x, y=t['Gas %'],
         hoverinfo='x+y',
         mode='lines',
-        line=dict(width=0.5, color='rgb(131, 90, 241)'),
+        line=dict(width=0.5, color="#1A1F63"),
         stackgroup='one',
         name="Gas %" # define stack group
     ))
@@ -107,7 +114,7 @@ with tab1:
         x=x, y=t['Petróleo %'],
         hoverinfo='x+y',
         mode='lines',
-        line=dict(width=0.5, color='rgb(111, 231, 219)'),
+        line=dict(width=0.5, color="#0FB7B3"),
         stackgroup='one',
         name='Petróleo %'
     ))
@@ -124,27 +131,34 @@ with tab1:
 # Subdivisión de minerales
     st.header("Composición de los minerales")
 
-    st.dataframe(sgr_miner)
+    pers = sgr_miner['Periodo'].unique().tolist()
+    pers.remove("2023-2024")
 
-    per = st.select_slider("Seleccione un periodo", sgr_miner['Periodo'].unique().tolist())
+    per = st.select_slider("Seleccione un periodo", pers)
 
     sgr_miner_per = sgr_miner[sgr_miner['Periodo'] == per].groupby('clasificacion')['regalias_causadas_pc'].sum().reset_index()
+    
+    
+
+
+    
     fig = px.treemap(sgr_miner_per,
                      path=[px.Constant("Total recaudo minero"),
                            "clasificacion"],
-                    values='regalias_causadas_pc')
+                    values='regalias_causadas_pc',
+                    color_discrete_sequence=custom_palette)
     st.plotly_chart(fig)
 
-    prov_piv = sgr_miner.pivot_table(index='clasificacion',
-                          columns='Periodo',
-                          values='regalias_causadas_pc',
-                          aggfunc='sum')
+    #prov_piv = sgr_miner.pivot_table(index='clasificacion',
+    #                      columns='Periodo',
+    #                      values='regalias_causadas_pc',
+    #                      aggfunc='sum')
     
    
-    sol = prov_piv.div(prov_piv.sum(axis=0), axis=1).unstack().reset_index().rename(columns={0:'%'})
-    fig = px.area(sol, x='Periodo', y='%', color='clasificacion')
+    #sol = prov_piv.div(prov_piv.sum(axis=0), axis=1).unstack().reset_index().rename(columns={0:'%'})
+    #fig = px.area(sol, x='Periodo', y='%', color='clasificacion', color_discrete_sequence=custom_palette)
 
-    st.plotly_chart(fig)
+    #st.plotly_chart(fig)
 
 # gráfico de área de la composición de minerales
 # gráfico como porcentaje del PIB
@@ -160,23 +174,25 @@ with tab2:
 
 # Subdivisión de funcionamiento
     st.header("Funcionamiento")
-    per = st.select_slider("Seleccione un periodo: ", sgr_func['Periodo'].unique().tolist())
+    pers = sgr_func['Periodo'].unique().tolist()
+    pers.remove('2023-2024')
+    per = st.select_slider("Seleccione un periodo: ", pers)
+
     sgr_func_per = sgr_func[sgr_func['Periodo'] == per]
-    st.dataframe(sgr_func)
 
-    fig = px.treemap(sgr_func_per, 
-                     path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
-                     values="aprop_vig_pc",
-                     title="aprop_vig_pc")
+#    fig = px.treemap(sgr_func_per, 
+#                     path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
+#                     values="aprop_vig_pc",
+#                     title="aprop_vig_pc")
 
-    st.plotly_chart(fig)
+#    st.plotly_chart(fig)
     
-    fig = px.treemap(sgr_func_per, 
-                     path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
-                     values="caja_total_pc",
-                     title='caja_total_pc')
+#    fig = px.treemap(sgr_func_per, 
+#                     path=[px.Constant("Total funcionamiento"), "Beneficiario", "Beneficiario 2"],
+#                     values="caja_total_pc",
+#                     title='caja_total_pc')
 
-    st.plotly_chart(fig)
+#    st.plotly_chart(fig)
 
 
 # Subdivisón de ahorro
@@ -185,8 +201,8 @@ with tab2:
     ahorro = sgr_fia[sgr_fia['CONCEPTO 1'] == 'AHORRO'].pivot_table(index=['Periodo', 'CONCEPTO 2'],
                                                                     values='instruccion_abono_pc',
                                                                     aggfunc='sum').reset_index()
-    st.dataframe(ahorro)
-    fig = px.bar(ahorro, x='Periodo', y='instruccion_abono_pc', color='CONCEPTO 2')
+
+    fig = px.bar(ahorro, x='Periodo', y='instruccion_abono_pc', color='CONCEPTO 2', color_discrete_sequence=custom_palette)
     st.plotly_chart(fig)
 
 
@@ -198,18 +214,18 @@ with tab2:
     inv = sgr_fia[sgr_fia['CONCEPTO 1'] == 'INVERSIÓN'].pivot_table(index=['Periodo', 'CONCEPTO 2'],
                                                                     values='instruccion_abono_pc',
                                                                     aggfunc='sum').reset_index()
-    st.dataframe(inv)
+
     fig = px.bar(inv, x='Periodo', y='instruccion_abono_pc', color='CONCEPTO 2')
     st.plotly_chart(fig)    
 
 with tab3:
 
     st.header("Por año")
+    sgr_proy = sgr_proy[sgr_proy['Periodo'] != '2023-2024']
 
     piv_sum_tot_an = sgr_proy.groupby(['AÑO APROBACIÓN'])['total_proyecto_pc'].sum().reset_index()
     piv_sum_tot_per = sgr_proy.groupby(['Periodo'])['total_proyecto_pc'].sum().reset_index()
-    st.dataframe(piv_sum_tot_an)
-    st.dataframe(piv_sum_tot_per)
+
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Por año", "Por bienio"))
 
@@ -236,8 +252,7 @@ with tab3:
 
     piv_count_tot_an = sgr_proy.groupby(['AÑO APROBACIÓN'])['total_proyecto_pc'].count().reset_index()
     piv_count_tot_per = sgr_proy.groupby(['Periodo'])['total_proyecto_pc'].count().reset_index()
-    st.dataframe(piv_count_tot_an)
-    st.dataframe(piv_count_tot_per)
+
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Por año", "Por bienio"))
 
@@ -264,8 +279,7 @@ with tab3:
 
     piv_mean_tot_an = sgr_proy.groupby(['AÑO APROBACIÓN'])['total_proyecto_pc'].mean().reset_index()
     piv_mean_tot_per = sgr_proy.groupby(['Periodo'])['total_proyecto_pc'].mean().reset_index()
-    st.dataframe(piv_mean_tot_an)
-    st.dataframe(piv_mean_tot_per)
+
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Por año", "Por bienio"))
 
@@ -307,12 +321,10 @@ with tab3:
                         columns='Periodo',
                         values='total_proyecto_pc',
                         aggfunc='count')
-    
-    st.dataframe(piv_dc_an)
+
     fig = px.imshow(piv_dc_an, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
-    st.dataframe(piv_dc_per)
 
     fig = px.imshow(piv_dc_per, text_auto=True, aspect="auto")
 
@@ -329,11 +341,11 @@ with tab3:
                         values='total_proyecto_pc',
                         aggfunc='sum')
     
-    st.dataframe(piv_ds_an)
+
     fig = px.imshow(piv_ds_an, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
-    st.dataframe(piv_ds_per)
+
     fig = px.imshow(piv_ds_per, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
@@ -350,11 +362,11 @@ with tab3:
                         values='total_proyecto_pc',
                         aggfunc='mean')
 
-    st.dataframe(piv_dm_an)
+
     fig = px.imshow(piv_dm_an, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
-    st.dataframe(piv_dm_per)
+
     fig = px.imshow(piv_dm_per, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
@@ -381,7 +393,7 @@ with tab3:
 
     tab = pd.concat([a, b, c], axis=1)
     tab.columns = ['A TIEMPO', 'APLAZADO', 'ADELANTADO']
-    st.dataframe(tab)
+
     tab = tab.div(tab.sum(axis=1), axis=0)
     tab = tab.unstack().reset_index(name='num_proyectos')
     tab.columns = ['cat', 'año', 'num_proyectos']
@@ -415,7 +427,7 @@ with tab3:
     tab = pd.concat([a, b, c, d], axis=1)
     
     tab.columns = ['FIN. A TIEMPO', 'FIN. DESPUÉS DE TIEMPO', 'FIN ANTES DE TIEMPO', 'EN EJECUCIÓN']
-    st.dataframe(tab)
+
     tab2 = tab.copy()
 
     tab = tab.div(tab.sum(axis=1), axis=0)
@@ -430,7 +442,7 @@ with tab3:
 
     tab2 = tab2.unstack().reset_index(name='num_proyectos')
     tab2.columns = ['cat', 'año', 'num_proyectos']
-    st.dataframe(tab2)
+
 
     tab2.to_excel('datos_william.xlsx', index=False)
 
@@ -456,8 +468,7 @@ with tab4:
 
     piv_sum_tot_an = sgr_cont.groupby(['AÑO APROBACIÓN'])['total_contrato_pc'].sum().reset_index()
     piv_sum_tot_per = sgr_cont.groupby(['Periodo'])['total_contrato_pc'].sum().reset_index()
-    st.dataframe(piv_sum_tot_an)
-    st.dataframe(piv_sum_tot_per)
+
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Por año", "Por bienio"))
 
@@ -484,8 +495,7 @@ with tab4:
 
     piv_count_tot_an = sgr_cont.groupby(['AÑO APROBACIÓN'])['total_contrato_pc'].count().reset_index()
     piv_count_tot_per = sgr_cont.groupby(['Periodo'])['total_contrato_pc'].count().reset_index()
-    st.dataframe(piv_count_tot_an)
-    st.dataframe(piv_count_tot_per)
+
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Por año", "Por bienio"))
 
@@ -512,8 +522,7 @@ with tab4:
 
     piv_mean_tot_an = sgr_cont.groupby(['AÑO APROBACIÓN'])['total_contrato_pc'].mean().reset_index()
     piv_mean_tot_per = sgr_cont.groupby(['Periodo'])['total_contrato_pc'].mean().reset_index()
-    st.dataframe(piv_mean_tot_an)
-    st.dataframe(piv_mean_tot_per)
+
 
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Por año", "Por bienio"))
 
@@ -556,11 +565,11 @@ with tab4:
                         values='total_contrato_pc',
                         aggfunc='count')
     
-    st.dataframe(piv_dc_an)
+
     fig = px.imshow(piv_dc_an, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
-    st.dataframe(piv_dc_per)
+
 
     fig = px.imshow(piv_dc_per, text_auto=True, aspect="auto")
 
@@ -577,11 +586,11 @@ with tab4:
                         values='total_contrato_pc',
                         aggfunc='sum')
     
-    st.dataframe(piv_ds_an)
+
     fig = px.imshow(piv_ds_an, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
-    st.dataframe(piv_ds_per)
+
     fig = px.imshow(piv_ds_per, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
@@ -598,11 +607,11 @@ with tab4:
                         values='total_contrato_pc',
                         aggfunc='mean')
 
-    st.dataframe(piv_dm_an)
+
     fig = px.imshow(piv_dm_an, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
-    st.dataframe(piv_dm_per)
+
     fig = px.imshow(piv_dm_per, text_auto=True, aspect="auto")
 
     st.plotly_chart(fig)
@@ -649,105 +658,105 @@ with tab4:
     st.pyplot(fig)
 
 
-with tab5:
-    st.header("Por año y por sector")
+# with tab5:
+#     st.header("Por año y por sector")
 
-    st.subheader("Cantidad de proyectos")
+#     st.subheader("Cantidad de proyectos")
 
 
 
-    # heatmap de número de proyectos por departamento y por año
+#     # heatmap de número de proyectos por departamento y por año
 
-    piv_dc_an = sgr_proy.pivot_table(index='SECTOR SUIFP',
-                        columns='AÑO APROBACIÓN',
-                        values='total_proyecto_pc',
-                        aggfunc='count')
+#     piv_dc_an = sgr_proy.pivot_table(index='SECTOR SUIFP',
+#                         columns='AÑO APROBACIÓN',
+#                         values='total_proyecto_pc',
+#                         aggfunc='count')
     
-    piv_dc_per = sgr_proy.pivot_table(index='SECTOR SUIFP',
-                        columns='Periodo',
-                        values='total_proyecto_pc',
-                        aggfunc='count')
+#     piv_dc_per = sgr_proy.pivot_table(index='SECTOR SUIFP',
+#                         columns='Periodo',
+#                         values='total_proyecto_pc',
+#                         aggfunc='count')
     
-    st.dataframe(piv_dc_an)
-    fig = px.imshow(piv_dc_an, text_auto=True, aspect="auto")
+#     st.dataframe(piv_dc_an)
+#     fig = px.imshow(piv_dc_an, text_auto=True, aspect="auto")
 
-    st.plotly_chart(fig)
-    st.dataframe(piv_dc_per)
+#     st.plotly_chart(fig)
+#     st.dataframe(piv_dc_per)
 
-    fig = px.imshow(piv_dc_per, text_auto=True, aspect="auto")
+#     fig = px.imshow(piv_dc_per, text_auto=True, aspect="auto")
 
-    st.plotly_chart(fig)
+#     st.plotly_chart(fig)
     
-    st.subheader("Valor total de los proyectos")
-    piv_ds_an = sgr_proy.pivot_table(index='SECTOR SUIFP',
-                        columns='AÑO APROBACIÓN',
-                        values='total_proyecto_pc',
-                        aggfunc='sum')
+#     st.subheader("Valor total de los proyectos")
+#     piv_ds_an = sgr_proy.pivot_table(index='SECTOR SUIFP',
+#                         columns='AÑO APROBACIÓN',
+#                         values='total_proyecto_pc',
+#                         aggfunc='sum')
     
-    piv_ds_per = sgr_proy.pivot_table(index='SECTOR SUIFP',
-                        columns='Periodo',
-                        values='total_proyecto_pc',
-                        aggfunc='sum')
+#     piv_ds_per = sgr_proy.pivot_table(index='SECTOR SUIFP',
+#                         columns='Periodo',
+#                         values='total_proyecto_pc',
+#                         aggfunc='sum')
     
-    st.dataframe(piv_ds_an)
-    fig = px.imshow(piv_ds_an, text_auto=True, aspect="auto")
+#     st.dataframe(piv_ds_an)
+#     fig = px.imshow(piv_ds_an, text_auto=True, aspect="auto")
 
-    st.plotly_chart(fig)
-    st.dataframe(piv_ds_per)
-    fig = px.imshow(piv_ds_per, text_auto=True, aspect="auto")
+#     st.plotly_chart(fig)
+#     st.dataframe(piv_ds_per)
+#     fig = px.imshow(piv_ds_per, text_auto=True, aspect="auto")
 
-    st.plotly_chart(fig)
+#     st.plotly_chart(fig)
 
-    st.subheader("Valor promedio de cada proyecto")
+#     st.subheader("Valor promedio de cada proyecto")
     
-    piv_dm_an = sgr_proy.pivot_table(index='SECTOR SUIFP',
-                        columns='AÑO APROBACIÓN',
-                        values='total_proyecto_pc',
-                        aggfunc='mean')
+#     piv_dm_an = sgr_proy.pivot_table(index='SECTOR SUIFP',
+#                         columns='AÑO APROBACIÓN',
+#                         values='total_proyecto_pc',
+#                         aggfunc='mean')
     
-    piv_dm_per = sgr_proy.pivot_table(index='SECTOR SUIFP',
-                        columns='Periodo',
-                        values='total_proyecto_pc',
-                        aggfunc='mean')
+#     piv_dm_per = sgr_proy.pivot_table(index='SECTOR SUIFP',
+#                         columns='Periodo',
+#                         values='total_proyecto_pc',
+#                         aggfunc='mean')
 
-    st.dataframe(piv_dm_an)
-    fig = px.imshow(piv_dm_an, text_auto=True, aspect="auto")
+#     st.dataframe(piv_dm_an)
+#     fig = px.imshow(piv_dm_an, text_auto=True, aspect="auto")
 
-    st.plotly_chart(fig)
-    st.dataframe(piv_dm_per)
-    fig = px.imshow(piv_dm_per, text_auto=True, aspect="auto")
+#     st.plotly_chart(fig)
+#     st.dataframe(piv_dm_per)
+#     fig = px.imshow(piv_dm_per, text_auto=True, aspect="auto")
 
-    st.plotly_chart(fig)
+#     st.plotly_chart(fig)
 
-with tab6:
+# with tab6:
 
-    # numero de proyectos vs. valor medio departamento
-    piv_1 = (sgr_proy
-             .groupby(['Periodo', 'SECTOR SUIFP'])
-             .agg({'total_proyecto_pc':['count','mean']})
-             .reset_index())
-    piv_1.columns = ['Periodo', 'SECTOR', 'num_proyectos', 'valor_promedio_proy']
-    st.dataframe(piv_1)
-    fig = px.scatter(piv_1,
-                     x='num_proyectos',
-                     y='valor_promedio_proy', hover_data=['Periodo', 'SECTOR', 'num_proyectos', 'valor_promedio_proy'])
-    fig.update_layout(showlegend=False)
-    st.plotly_chart(fig)
-    piv_2 = (sgr_proy
-             .groupby(['Periodo', 'DEPARTAMENTO EJECUTOR'])
-             .agg({'total_proyecto_pc':['count','mean']})
-             .reset_index())
-    piv_2.columns = ['Periodo', 'Departamento', 'num_proyectos', 'valor_promedio_proy']
-    st.dataframe(piv_2)
-    fig = px.scatter(piv_2,
-                     x='num_proyectos',
-                     y='valor_promedio_proy',
-                     hover_data=['Periodo', 'Departamento', 'num_proyectos', 'valor_promedio_proy'])
-    fig.update_layout(showlegend=False)
-    st.plotly_chart(fig)
+#     # numero de proyectos vs. valor medio departamento
+#     piv_1 = (sgr_proy
+#              .groupby(['Periodo', 'SECTOR SUIFP'])
+#              .agg({'total_proyecto_pc':['count','mean']})
+#              .reset_index())
+#     piv_1.columns = ['Periodo', 'SECTOR', 'num_proyectos', 'valor_promedio_proy']
+#     st.dataframe(piv_1)
+#     fig = px.scatter(piv_1,
+#                      x='num_proyectos',
+#                      y='valor_promedio_proy', hover_data=['Periodo', 'SECTOR', 'num_proyectos', 'valor_promedio_proy'])
+#     fig.update_layout(showlegend=False)
+#     st.plotly_chart(fig)
+#     piv_2 = (sgr_proy
+#              .groupby(['Periodo', 'DEPARTAMENTO EJECUTOR'])
+#              .agg({'total_proyecto_pc':['count','mean']})
+#              .reset_index())
+#     piv_2.columns = ['Periodo', 'Departamento', 'num_proyectos', 'valor_promedio_proy']
+#     st.dataframe(piv_2)
+#     fig = px.scatter(piv_2,
+#                      x='num_proyectos',
+#                      y='valor_promedio_proy',
+#                      hover_data=['Periodo', 'Departamento', 'num_proyectos', 'valor_promedio_proy'])
+#     fig.update_layout(showlegend=False)
+#     st.plotly_chart(fig)
 
     
-with tab7:
-    st.dataframe(asig_reg)
+# with tab7:
+#     st.dataframe(asig_reg)
 
 
